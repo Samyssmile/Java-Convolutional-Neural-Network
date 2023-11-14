@@ -6,27 +6,34 @@ import de.edux.ml.cnn.layer.*;
 import de.edux.ml.cnn.network.Network;
 import de.edux.ml.cnn.network.NetworkBuilder;
 import de.edux.ml.cnn.tensor.Tensor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 public class Main {
+  private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+
   private static final int EPOCHS = 5;
   private static final double LEARNING_RATE = 0.01;
   private static final int BATCH_SIZE = 100;
+  String trainImagePath = "mnist" + File.separator + "train-images-idx3-ubyte";
+  String trainLabelPath = "mnist" + File.separator + "train-labels-idx1-ubyte";
+  String testImagePath = "mnist" + File.separator + "t10k-images-idx3-ubyte";
+  String testLabelPath = "mnist" + File.separator + "t10k-labels-idx1-ubyte";
+  Tensor[] trainImages = loadImages(trainImagePath, 60000);
+  Tensor[] trainLabels = loadLabels(trainLabelPath, 60000);
+
+  Tensor[] testImages = loadImages(testImagePath, 10000);
+  Tensor[] testLabels = loadLabels(testLabelPath, 10000);
 
   public static void main(String[] args) {
-    String trainImagePath = "mnist" + File.separator + "train-images-idx3-ubyte";
-    String trainLabelPath = "mnist" + File.separator + "train-labels-idx1-ubyte";
-    String testImagePath = "mnist" + File.separator + "t10k-images-idx3-ubyte";
-    String testLabelPath = "mnist" + File.separator + "t10k-labels-idx1-ubyte";
 
-    Tensor[] trainImages = loadImages(trainImagePath, 60000);
-    Tensor[] trainLabels = loadLabels(trainLabelPath, 60000);
+    new Main().run();
+  }
 
-    Tensor[] testImages = loadImages(testImagePath, 10000);
-    Tensor[] testLabels = loadLabels(testLabelPath, 10000);
-
-    System.out.println("MNIST data loaded.");
-
+  private void run() {
+    LOG.debug("Start training");
     Network network =
         new NetworkBuilder()
             .addLayer(new ConvolutionalLayer(8, 3, 1, 1, Channels.GRAY))
