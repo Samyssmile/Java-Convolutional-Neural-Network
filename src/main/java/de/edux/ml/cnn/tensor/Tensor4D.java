@@ -1,5 +1,8 @@
 package de.edux.ml.cnn.tensor;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  *
  * CNN use mini batches for training.
@@ -14,6 +17,8 @@ public class Tensor4D {
   private int rows;
   private int cols;
   private double[][][][] data;
+
+  private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
   public Tensor4D(int batches, int channels, int rows, int cols) {
     this.batches = batches;
@@ -146,4 +151,17 @@ public class Tensor4D {
   public double[][][][] getData() {
     return data;
   }
+
+  public void randomHE() {
+    for (int i = 0; i < batches; i++) {
+      for (int j = 0; j < channels; j++) {
+        for (int k = 0; k < rows; k++) {
+          for (int l = 0; l < cols; l++) {
+            data[i][j][k][l] = random.nextGaussian() * Math.sqrt(2.0 / (rows * cols));
+          }
+        }
+      }
+    }
+  }
+
 }
