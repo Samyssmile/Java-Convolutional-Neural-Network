@@ -2,15 +2,15 @@ package de.edux.ml.cnn.network;
 
 import de.edux.ml.cnn.layer.Layer;
 import de.edux.ml.cnn.functions.Optimizer;
-import de.edux.ml.cnn.tensor.Tensor;
+import de.edux.ml.cnn.tensor.Tensor4D;
 
 import java.util.List;
 
 public class Network extends Layer implements Trainable {
 
   private final List<Layer> layers;
-  private final Tensor[] trainImages;
-  private final Tensor[] trainLabels;
+  private final Tensor4D[] trainImages;
+  private final Tensor4D[] trainLabels;
   private final int epochs;
   private final Optimizer optimizer;
   private final double learningRate;
@@ -18,8 +18,8 @@ public class Network extends Layer implements Trainable {
 
   public Network(
       List<Layer> layers,
-      Tensor[] trainImages,
-      Tensor[] trainLabels,
+      Tensor4D[] trainImages,
+      Tensor4D[] trainLabels,
       int batchSize,
       int epochs,
       Optimizer optimizer,
@@ -33,8 +33,8 @@ public class Network extends Layer implements Trainable {
     this.layers = layers;
   }
 
-  public Tensor forward(Tensor inputs) {
-    Tensor output = inputs;
+  public Tensor4D forward(Tensor4D inputs) {
+    Tensor4D output = inputs;
     for (Layer layer : layers) {
       output = layer.forward(output);
     }
@@ -42,8 +42,8 @@ public class Network extends Layer implements Trainable {
   }
 
   @Override
-  public Tensor backward(Tensor gradient) {
-    Tensor backpropagatedGradient = gradient;
+  public Tensor4D backward(Tensor4D gradient) {
+    Tensor4D backpropagatedGradient = gradient;
     for (int i = layers.size() - 1; i >= 0; i--) {
       backpropagatedGradient = layers.get(i).backward(backpropagatedGradient);
     }
@@ -64,7 +64,7 @@ public class Network extends Layer implements Trainable {
   }
 
   @Override
-  public double evaluate(Tensor[] input, Tensor[] target) {
+  public double evaluate(Tensor4D[] input, Tensor4D[] target) {
     // Evaluation des Netzwerks
     return 0; // Implementieren Sie die Evaluierungsmethode
   }

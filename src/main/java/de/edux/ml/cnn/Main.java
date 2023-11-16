@@ -5,7 +5,7 @@ import de.edux.ml.cnn.functions.Optimizer;
 import de.edux.ml.cnn.layer.*;
 import de.edux.ml.cnn.network.Network;
 import de.edux.ml.cnn.network.NetworkBuilder;
-import de.edux.ml.cnn.tensor.Tensor;
+import de.edux.ml.cnn.tensor.Tensor4D;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +21,11 @@ public class Main {
   String trainLabelPath = "mnist" + File.separator + "train-labels-idx1-ubyte";
   String testImagePath = "mnist" + File.separator + "t10k-images-idx3-ubyte";
   String testLabelPath = "mnist" + File.separator + "t10k-labels-idx1-ubyte";
-  Tensor[] trainImages = loadImages(trainImagePath, 60000);
-  Tensor[] trainLabels = loadLabels(trainLabelPath, 60000);
+  Tensor4D[] trainImages = loadImages(trainImagePath, 60000);
+  Tensor4D[] trainLabels = loadLabels(trainLabelPath, 60000);
 
-  Tensor[] testImages = loadImages(testImagePath, 10000);
-  Tensor[] testLabels = loadLabels(testLabelPath, 10000);
+  Tensor4D[] testImages = loadImages(testImagePath, 10000);
+  Tensor4D[] testLabels = loadLabels(testLabelPath, 10000);
 
   public static void main(String[] args) {
 
@@ -49,7 +49,7 @@ public class Main {
     network.evaluate(testImages, testLabels);
   }
 
-  private static Tensor[] loadImages(String imagePath, int limit) {
+  private static Tensor4D[] loadImages(String imagePath, int limit) {
     try {
       FileInputStream fileStream = new FileInputStream(imagePath);
       BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
@@ -60,10 +60,10 @@ public class Main {
       int imageSize = 28 * 28;
       byte[] buffer = new byte[imageSize];
 
-      Tensor[] images = new Tensor[limit];
+      Tensor4D[] images = new Tensor4D[limit];
       for (int i = 0; i < limit; i++) {
         if (bufferedStream.read(buffer) == -1) break;
-        images[i] = byteArrayToTensor(buffer);
+        images[i] = byteArrayToTensor4D(buffer);
       }
 
       bufferedStream.close();
@@ -74,15 +74,15 @@ public class Main {
     }
   }
 
-  private static Tensor byteArrayToTensor(byte[] array) {
-    Tensor tensor = new Tensor(1, 28, 28, 1); // Für MNIST: 1 Batch, 28x28 Größe, 1 Kanal
+  private static Tensor4D byteArrayToTensor4D(byte[] array) {
+    Tensor4D Tensor4D = new Tensor4D(1, 28, 28, 1); // Für MNIST: 1 Batch, 28x28 Größe, 1 Kanal
     for (int i = 0; i < array.length; i++) {
-      tensor.getData()[0][i / 28][i % 28][0] = (array[i] & 0xFF) / 255.0f; // Normalisieren
+      Tensor4D.getData()[0][i / 28][i % 28][0] = (array[i] & 0xFF) / 255.0f; // Normalisieren
     }
-    return tensor;
+    return Tensor4D;
   }
 
-  private static Tensor[] loadLabels(String labelPath, int limit) {
+  private static Tensor4D[] loadLabels(String labelPath, int limit) {
     try {
       FileInputStream fileStream = new FileInputStream(labelPath);
       BufferedInputStream bufferedStream = new BufferedInputStream(fileStream);
@@ -90,7 +90,7 @@ public class Main {
       // Skip the header
       bufferedStream.skip(8);
 
-      Tensor[] labels = new Tensor[limit];
+      Tensor4D[] labels = new Tensor4D[limit];
       for (int i = 0; i < limit; i++) {
         int labelValue = bufferedStream.read();
         if (labelValue == -1) break;
@@ -105,9 +105,9 @@ public class Main {
     }
   }
 
-  private static Tensor oneHotEncode(int value, int numClasses) {
-    Tensor tensor = new Tensor(1, 1, 1, numClasses);
-    tensor.getData()[0][0][0][value] = 1.0f;
-    return tensor;
+  private static Tensor4D oneHotEncode(int value, int numClasses) {
+    Tensor4D Tensor4D = new Tensor4D(1, 1, 1, numClasses);
+    Tensor4D.getData()[0][0][0][value] = 1.0f;
+    return Tensor4D;
   }
 }
