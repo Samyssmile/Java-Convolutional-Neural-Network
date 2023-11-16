@@ -1,8 +1,11 @@
 package de.edux.ml.cnn.tensor;
 
 /**
- * CNN use mini batches for training. CNN use Categorical Cross Entropy as loss function. CNN use
- * Stochastic Gradient Descent as optimizer. CNN use ReLu as activation function for hidden layers.
+ *
+ * CNN use mini batches for training.
+ * CNN use Categorical Cross Entropy as loss function.
+ * CNN use Stochastic Gradient Descent as optimizer.
+ * CNN use ReLu as activation function for hidden layers.
  * CNN use Softmax as activation function for the last layer.
  */
 public class Tensor4D {
@@ -19,6 +22,24 @@ public class Tensor4D {
     this.cols = cols;
     this.data = new double[batches][channels][rows][cols];
   }
+
+    public Tensor4D flatten() {
+        int flattenedRows = 1;
+        int flattenedCols = channels * rows * cols;
+        Tensor4D flattenedTensor = new Tensor4D(batches, 1, flattenedRows, flattenedCols);
+
+        for (int batch = 0; batch < batches; batch++) {
+            for (int channel = 0; channel < channels; channel++) {
+                for (int row = 0; row < rows; row++) {
+                    for (int col = 0; col < cols; col++) {
+                        int flatIndex = channel * rows * cols + row * cols + col;
+                        flattenedTensor.data[batch][0][0][flatIndex] = this.data[batch][channel][row][col];
+                    }
+                }
+            }
+        }
+        return flattenedTensor;
+    }
 
   public Tensor4D convolve(Tensor4D filter, int stride, int padding) {
     // Adjust the input dimensions based on padding
