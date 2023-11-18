@@ -88,6 +88,7 @@ public class Network extends Layer implements Trainable {
                 Tensor4D output = forward(batchImages);
                 Tensor4D input = backward(output);
             }
+            System.out.println("Epoch " + i + " done");
         }
     }
 

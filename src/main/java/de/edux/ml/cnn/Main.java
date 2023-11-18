@@ -39,6 +39,7 @@ public class Main {
                         .addLayer(new InputLayer(28, 28, 1))
                         .addLayer(new ConvolutionalLayer(8, 3, 1, 1, 3))
                         .addLayer(new FlattenLayer())
+                        .addLayer(new FullyConnectedLayer(6272, 10, LEARNING_RATE))
                         .build(trainImages, trainLabels, BATCH_SIZE, EPOCHS, Optimizer.SGD, LEARNING_RATE);
 
         // start training (batch size = 100, epochs = 5, optimizer = SGD, learning rate = 0.01)

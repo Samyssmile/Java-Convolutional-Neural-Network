@@ -105,14 +105,58 @@ public class ConvolutionalLayer extends Layer {
 
 
     private Tensor4D calculateGradientWrtInput(Tensor4D inputGradient, Tensor4D filters) {
+        // Berechnen der Dimensionen für den Gradiententensor des Eingabetensors
+        int gradInputBatches = inputGradient.getBatches();
+        int gradInputChannels = filters.getChannels(); // Anzahl der Kanäle in den Filtern
+        int gradInputRows = (inputGradient.getRows() - 1) * this.stride -2 * padding + filters.getRows();
+        int gradInputCols = (inputGradient.getCols() - 1) * this.stride -2*padding+ filters.getCols();
 
+        // Initialisieren des Gradiententensors für den Eingabetensor
+        Tensor4D gradInput = new Tensor4D(gradInputBatches, gradInputChannels, gradInputRows, gradInputCols);
+
+        // Durchführen der vollen Faltung zwischen inputGradient und den Filtern
+        for (int batch = 0; batch < gradInputBatches; batch++) {
+            for (int channel = 0; channel < gradInputChannels; channel++) {
+                for (int row = 0; row < gradInputRows; row++) {
+                    for (int col = 0; col < gradInputCols; col++) {
+                        double gradientSum = 0.0;
+
+                        // Iterieren über die Filter und den Eingabegradienten
+                        for (int filterNum = 0; filterNum < filters.getBatches(); filterNum++) {
+                            for (int i = 0; i < filters.getRows(); i++) {
+                                for (int j = 0; j < filters.getCols(); j++) {
+                                    // Berechnen der Position im Eingabegradienten
+                                    int inputRow = row - i;
+                                    int inputCol = col - j;
+
+                                    // Überprüfen der Grenzen
+                                    if (inputRow >= 0 && inputRow < inputGradient.getRows() && inputCol >= 0 && inputCol < inputGradient.getCols()) {
+                                        gradientSum += filters.getData()[filterNum][channel][i][j] *
+                                                inputGradient.getData()[batch][filterNum][inputRow][inputCol];
+                                    }
+                                }
+                            }
+                        }
+
+                        gradInput.getData()[batch][channel][row][col] = gradientSum;
+                    }
+                }
+            }
+        }
 
         return gradInput;
     }
-
 }
 
 
+/**
+ *
+ * CNN use mini batches for training.
+ * CNN use Categorical Cross Entropy as loss function.
+ * CNN use Stochastic Gradient Descent as optimizer.
+ * CNN use ReLu as activation function for hidden layers.
+ * CNN use Softmax as activation function for the last layer.
+ */
 /*
 public class Tensor4D {
     private int batches;
