@@ -31,12 +31,10 @@ public class FullyConnectedLayer extends Layer {
 
         // Initialisieren der Gewichte und Biases mit He-Initialisierung
         this.weights = new Tensor4D(1, outputSize, inputSize, 1);
+        this.weights.randomHE();
         this.biases = new Tensor4D(1, outputSize, 1, 1);
 
         for (int i = 0; i < outputSize; i++) {
-            for (int j = 0; j < inputSize; j++) {
-                this.weights.getData()[0][i][j][0] = stdDev * random.nextGaussian();
-            }
             this.biases.getData()[0][i][0][0] = 0;  // Biases werden oft mit 0 initialisiert
         }
     }
@@ -52,6 +50,48 @@ public class FullyConnectedLayer extends Layer {
 
     @Override
     public Tensor4D backward(Tensor4D errorGradient) {
-        return null;
+        // Gradienten für Gewichte berechnen
+        Tensor4D transposedLastInput = this.lastInput.transpose();
+        Tensor4D weightGradient = transposedLastInput.multiply(errorGradient);
+
+        Tensor4D averagedWeightGradient = weightGradient.averageOverBatches(); // Methode 'averageOverBatches()' muss implementiert sein
+
+        Tensor4D biasGradient = errorGradient.sumOverBatchesForBiases();
+
+        // Fehlergradienten für den vorherigen Layer berechnen
+        Tensor4D prevLayerErrorGradient =  errorGradient.multiply(this.weights.transpose()); // Pseudocode
+
+        // Optional: Aktualisierung der Gewichte und Biases hier (oder in einem separaten Schritt)
+        this.weights = updateWeights(this.weights, weightGradient); // Pseudocode
+        this.biases = updateBiases(this.biases, biasGradient); // Pseudocode*/
+
+        return prevLayerErrorGradient;
     }
+
+    private Tensor4D updateWeights(Tensor4D weights, Tensor4D weightGradient) {
+        for (int i = 0; i < weights.getChannels(); i++) {
+            for (int j = 0; j < weights.getRows(); j++) {
+                for (int k = 0; k < weights.getCols(); k++) {
+                    weights.getData()[0][i][j][k] -= learningRate * weightGradient.getData()[0][i][j][k];
+                }
+            }
+        }
+        return weights;
+    }
+
+
+    private Tensor4D updateBiases(Tensor4D biases, Tensor4D biasGradient) {
+        for (int i = 0; i < biases.getChannels(); i++) {
+            for (int j = 0; j < biases.getRows(); j++) {
+                for (int k = 0; k < biases.getCols(); k++) {
+                    biases.getData()[0][i][j][k] -= learningRate * biasGradient.getData()[0][i][j][k];
+                }
+            }
+        }
+        return biases;
+    }
+
+
+
+
 }

@@ -4,14 +4,39 @@ import de.edux.ml.cnn.tensor.Tensor4D;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SoftmaxLayer extends Layer{
+public class SoftmaxLayer extends Layer {
     private static final Logger LOG = LoggerFactory.getLogger(MaxPoolingLayer.class);
 
     @Override
     public Tensor4D forward(Tensor4D input) {
         LOG.debug("SoftmaxLayer forward");
-        return input.softmax();
+        return softmax(input);
     }
+
+    private Tensor4D softmax(Tensor4D input) {
+        Tensor4D output = new Tensor4D(input.getBatches(), input.getChannels(), input.getRows(), input.getCols());
+
+        for (int batch = 0; batch < input.getBatches(); batch++) {
+            for (int row = 0; row < input.getRows(); row++) {
+                for (int col = 0; col < input.getCols(); col++) {
+                    // Compute the exponential values and sum them
+                    double sumExp = 0.0;
+                    for (int channel = 0; channel < input.getChannels(); channel++) {
+                        sumExp += Math.exp(input.getData()[batch][channel][row][col]);
+                    }
+
+                    // Apply softmax transformation
+                    for (int channel = 0; channel < input.getChannels(); channel++) {
+                        double expValue = Math.exp(input.getData()[batch][channel][row][col]);
+                        output.getData()[batch][channel][row][col] = expValue / sumExp;
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
 
     @Override
     public Tensor4D backward(Tensor4D dL_dy) {

@@ -21,8 +21,8 @@ public class Main {
     String trainLabelPath = "mnist" + File.separator + "train-labels-idx1-ubyte";
     String testImagePath = "mnist" + File.separator + "t10k-images-idx3-ubyte";
     String testLabelPath = "mnist" + File.separator + "t10k-labels-idx1-ubyte";
-    Tensor4D[] trainImages = loadImages(trainImagePath, 60000);
-    Tensor4D[] trainLabels = loadLabels(trainLabelPath, 60000);
+    Tensor4D[] trainImages = loadImages(trainImagePath, 2000);
+    Tensor4D[] trainLabels = loadLabels(trainLabelPath, 2000);
 
     Tensor4D[] testImages = loadImages(testImagePath, 10000);
     Tensor4D[] testLabels = loadLabels(testLabelPath, 10000);
@@ -40,11 +40,18 @@ public class Main {
                         .addLayer(new ConvolutionalLayer(8, 3, 1, 1, 3))
                         .addLayer(new FlattenLayer())
                         .addLayer(new FullyConnectedLayer(6272, 10, LEARNING_RATE))
+                        .addLayer(new SoftmaxLayer())
                         .build(trainImages, trainLabels, BATCH_SIZE, EPOCHS, Optimizer.SGD, LEARNING_RATE);
 
         // start training (batch size = 100, epochs = 5, optimizer = SGD, learning rate = 0.01)
-        network.train();
+        network.train(testImages, testLabels);
         network.evaluate(testImages, testLabels);
+
+        //first test label and image
+        Tensor4D testImage = testImages[0];
+        Tensor4D testLabel = testLabels[0];
+        Tensor4D prediction = network.predict(testImage);
+        System.out.println("Prediction: " + prediction);
     }
 
     private static Tensor4D[] loadImages(String imagePath, int limit) {

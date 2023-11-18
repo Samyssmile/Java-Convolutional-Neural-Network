@@ -27,6 +27,13 @@ public class Tensor4D {
 
     private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
+    /**
+     *
+     * @param batches
+     * @param channels
+     * @param rows
+     * @param cols
+     */
     public Tensor4D(int batches, int channels, int rows, int cols) {
         this.batches = batches;
         this.channels = channels;
@@ -180,6 +187,57 @@ public class Tensor4D {
     }
 
     /**
+     * Multipliziert diesen Tensor mit einem anderen Tensor.
+     * @param other Der andere Tensor, mit dem multipliziert wird.
+     * @return Das Ergebnis der Multiplikation.
+     */
+    public Tensor4D multiply2(Tensor4D other) {
+        // Überprüfen der Dimensionen für die Multiplikation
+        if (this.cols != other.rows) {
+            throw new IllegalArgumentException("Dimensionen stimmen nicht überein für die Multiplikation");
+        }
+
+        int newBatches = this.batches;
+        int newChannels = other.channels;
+        int newRows = this.rows;
+        int newCols = other.cols;
+
+        Tensor4D result = new Tensor4D(newBatches, newChannels, newRows, newCols);
+
+        // Durchführen der Multiplikation
+        for (int batch = 0; batch < newBatches; batch++) {
+            for (int channel = 0; channel < newChannels; channel++) {
+                for (int row = 0; row < newRows; row++) {
+                    for (int col = 0; col < newCols; col++) {
+                        double sum = 0.0;
+                        for (int k = 0; k < this.cols; k++) {
+                            sum += this.data[batch][0][row][k] * other.data[0][channel][k][col];
+                        }
+                        result.data[batch][channel][row][col] = sum;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public Tensor4D sumOverBatchesForBiases() {
+        Tensor4D sum = new Tensor4D(1, this.channels, 1, 1);
+
+        for (int channel = 0; channel < this.channels; channel++) {
+            double total = 0.0;
+            for (int batch = 0; batch < this.batches; batch++) {
+                total += this.data[batch][channel][0][0];
+            }
+            sum.data[0][channel][0][0] = total;
+        }
+
+        return sum;
+    }
+
+
+    /**
      * Führt eine Matrix-Vektor-Multiplikation mit einem anderen Tensor4D durch.
      * @param other Der Tensor, mit dem multipliziert wird.
      * @return Das Ergebnis der Multiplikation als neuer Tensor4D.
@@ -209,6 +267,63 @@ public class Tensor4D {
         return result;
     }
 
+
+    /**
+     * Berechnet den Durchschnitt über die Batch-Dimension.
+     * @return Ein neuer Tensor, der den Durchschnitt über die Batch-Dimension darstellt.
+     */
+    public Tensor4D averageOverBatches() {
+        // Die neue Batch-Dimension wird 1 sein
+        int newBatches = 1;
+
+        Tensor4D averaged = new Tensor4D(newBatches, this.channels, this.rows, this.cols);
+
+        // Durchführen des Durchschnitts über die Batches
+        for (int channel = 0; channel < this.channels; channel++) {
+            for (int row = 0; row < this.rows; row++) {
+                for (int col = 0; col < this.cols; col++) {
+                    double sum = 0.0;
+                    for (int batch = 0; batch < this.batches; batch++) {
+                        sum += this.data[batch][channel][row][col];
+                    }
+                    averaged.data[0][channel][row][col] = sum / this.batches;
+                }
+            }
+        }
+
+        return averaged;
+    }
+
+
+    /**
+     * Führt eine Batch-weise Matrix-Vektor-Multiplikation mit einem anderen Tensor4D durch.
+     * @param other Der Tensor, mit dem multipliziert wird.
+     * @return Das Ergebnis der Multiplikation als neuer Tensor4D.
+     */
+    public Tensor4D batchedMatrixVectorMultiply(Tensor4D other) {
+        // Sicherstellen, dass die Multiplikation möglich ist
+        if (this.cols != other.rows) {
+            throw new IllegalArgumentException("Die Spalten des ersten Tensors müssen mit den Zeilen des zweiten Tensors übereinstimmen.");
+        }
+
+        // Der resultierende Tensor hat die Dimensionen [this.batches, this.channels, other.cols, 1]
+        Tensor4D result = new Tensor4D(this.batches, this.channels, other.cols, 1);
+
+        // Durchführen der Batch-weise Matrix-Vektor-Multiplikation
+        for (int batch = 0; batch < this.batches; batch++) {
+            for (int i = 0; i < this.channels; i++) {
+                for (int j = 0; j < other.cols; j++) {
+                    double sum = 0.0;
+                    for (int k = 0; k < this.cols; k++) {
+                        sum += this.data[batch][i][0][k] * other.data[0][j][k][0];
+                    }
+                    result.data[batch][i][0][j] = sum;
+                }
+            }
+        }
+
+        return result;
+    }
 
     /**
      * Applies the softmax function to the last dimension of the 4D tensor.
@@ -364,5 +479,13 @@ public class Tensor4D {
         return paddedData;
     }
 
-
+    @Override
+    public String toString() {
+        return "Tensor4D{" +
+                "batches=" + batches +
+                ", channels=" + channels +
+                ", rows=" + rows +
+                ", cols=" + cols +
+                '}';
+    }
 }
