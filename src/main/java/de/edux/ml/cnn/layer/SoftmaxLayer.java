@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SoftmaxLayer extends Layer {
-    private static final Logger LOG = LoggerFactory.getLogger(MaxPoolingLayer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SoftmaxLayer.class);
 
     @Override
     public Tensor4D forward(Tensor4D input) {
         LOG.debug("SoftmaxLayer forward");
-        return softmax(input);
+        return input.softmax();
     }
 
     private Tensor4D softmax(Tensor4D input) {
